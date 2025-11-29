@@ -99,7 +99,7 @@ msa-saga-go-practical/
 │   ├── init-inventory-db.sql
 │   └── init-delivery-db.sql
 │
-├── docker-compose.yml         # 전체 인프라 정의
+├── docker compose.yml         # 전체 인프라 정의
 ├── Makefile                   # 빌드/실행 스크립트
 └── README.md
 ```
@@ -123,13 +123,13 @@ cd msa-saga-go-practical
 
 ```bash
 # 모든 서비스 시작
-docker-compose up -d
+docker compose up -d
 
 # 로그 확인
-docker-compose logs -f order-service payment-service inventory-service delivery-service
+docker compose logs -f order-service payment-service inventory-service delivery-service
 
 # 특정 서비스만 재시작
-docker-compose restart order-service
+docker compose restart order-service
 ```
 
 ### 3. 서비스 상태 확인
@@ -338,25 +338,25 @@ curl http://localhost:8001/orders/123
 
 ```bash
 # Kafka 상태 확인
-docker-compose logs kafka
+docker compose logs kafka
 
 # Kafka 재시작
-docker-compose restart kafka zookeeper
+docker compose restart kafka zookeeper
 ```
 
 ### 2. DB 마이그레이션 실패
 
 ```bash
 # DB 재초기화
-docker-compose down -v
-docker-compose up -d postgres-order postgres-payment postgres-inventory postgres-delivery
+docker compose down -v
+docker compose up -d postgres-order postgres-payment postgres-inventory postgres-delivery
 ```
 
 ### 3. Outbox 이벤트가 발행되지 않음
 
 ```bash
 # Outbox Worker 로그 확인
-docker-compose logs -f order-service | grep "outbox"
+docker compose logs -f order-service | grep "outbox"
 
 # Outbox 테이블 확인
 docker exec -it postgres-order psql -U order -d order_db \
@@ -367,7 +367,7 @@ docker exec -it postgres-order psql -U order -d order_db \
 
 ```bash
 # Redis 연결 확인
-docker-compose logs redis
+docker compose logs redis
 
 # Redis CLI 접속
 docker exec -it redis redis-cli
@@ -419,13 +419,13 @@ http://localhost:8088
 
 ```bash
 # 전체 서비스 로그
-docker-compose logs -f
+docker compose logs -f
 
 # 특정 서비스 로그
-docker-compose logs -f order-service
+docker compose logs -f order-service
 
 # 에러 로그만 필터
-docker-compose logs order-service | grep ERROR
+docker compose logs order-service | grep ERROR
 ```
 
 ## 🧪 테스트
@@ -447,7 +447,7 @@ go test -cover ./...
 
 ```bash
 # 환경 시작
-docker-compose up -d
+docker compose up -d
 
 # E2E 테스트 실행
 go test ./tests/e2e/... -v

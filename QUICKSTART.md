@@ -15,11 +15,11 @@ git clone <repository-url>
 cd msa-saga-go-practical
 
 # 모든 서비스 시작
-docker-compose up -d
+docker compose up -d
 
 # 서비스 시작 대기 (약 30초-1분)
 # 로그 확인
-docker-compose logs -f
+docker compose logs -f
 ```
 
 **확인 포인트:**
@@ -95,16 +95,16 @@ curl http://localhost:8001/orders/1
 
 ```bash
 # Order Service 로그
-docker-compose logs order-service | grep "order created successfully"
+docker compose logs order-service | grep "order created successfully"
 
 # Payment Service 로그
-docker-compose logs payment-service | grep "payment completed"
+docker compose logs payment-service | grep "payment completed"
 
 # Inventory Service 로그
-docker-compose logs inventory-service | grep "stock reserved"
+docker compose logs inventory-service | grep "stock reserved"
 
 # Delivery Service 로그
-docker-compose logs delivery-service | grep "delivery started"
+docker compose logs delivery-service | grep "delivery started"
 ```
 
 ## 🔥 4단계: 실패 시나리오 테스트 (1분)
@@ -130,7 +130,7 @@ done
 
 ```bash
 # Payment Service 로그에서 환불 확인
-docker-compose logs payment-service | grep "refund"
+docker compose logs payment-service | grep "refund"
 
 # 주문 상태 확인 (CANCELED 또는 FAILED 예상)
 curl http://localhost:8001/orders/11
@@ -198,10 +198,10 @@ docker exec -it postgres-order psql -U order -d order_db \
 
 ```bash
 # 모든 서비스 중지
-docker-compose down
+docker compose down
 
 # 볼륨까지 삭제 (DB 데이터 초기화)
-docker-compose down -v
+docker compose down -v
 ```
 
 ## 🐛 문제 해결
@@ -210,17 +210,17 @@ docker-compose down -v
 
 ```bash
 # 로그 확인
-docker-compose logs [service-name]
+docker compose logs [service-name]
 
 # 개별 서비스 재시작
-docker-compose restart order-service
+docker compose restart order-service
 ```
 
 ### Kafka 연결 실패
 
 ```bash
 # Kafka 재시작
-docker-compose restart kafka zookeeper
+docker compose restart kafka zookeeper
 
 # Kafka 상태 확인
 docker exec -it kafka kafka-broker-api-versions.sh --bootstrap-server localhost:9092
@@ -230,7 +230,7 @@ docker exec -it kafka kafka-broker-api-versions.sh --bootstrap-server localhost:
 
 ```bash
 # DB 재시작
-docker-compose restart postgres-order postgres-payment postgres-inventory postgres-delivery
+docker compose restart postgres-order postgres-payment postgres-inventory postgres-delivery
 
 # DB 상태 확인
 docker exec -it postgres-order pg_isready -U order

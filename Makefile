@@ -5,11 +5,11 @@ help: ## 도움말 표시
 
 build: ## 모든 서비스 빌드
 	@echo "Building all services..."
-	docker-compose build
+	docker compose build
 
 up: ## 모든 서비스 시작
 	@echo "Starting all services..."
-	docker-compose up -d
+	docker compose up -d
 	@echo "\n✅ All services started!"
 	@echo "  - Kafka UI: http://localhost:8080"
 	@echo "  - Temporal UI: http://localhost:8088"
@@ -20,42 +20,42 @@ up: ## 모든 서비스 시작
 
 down: ## 모든 서비스 중지
 	@echo "Stopping all services..."
-	docker-compose down
+	docker compose down
 
 down-v: ## 모든 서비스 중지 및 볼륨 삭제
 	@echo "Stopping all services and removing volumes..."
-	docker-compose down -v
+	docker compose down -v
 
 logs: ## 전체 로그 확인
-	docker-compose logs -f
+	docker compose logs -f
 
 logs-order: ## Order Service 로그
-	docker-compose logs -f order-service
+	docker compose logs -f order-service
 
 logs-payment: ## Payment Service 로그
-	docker-compose logs -f payment-service
+	docker compose logs -f payment-service
 
 logs-inventory: ## Inventory Service 로그
-	docker-compose logs -f inventory-service
+	docker compose logs -f inventory-service
 
 logs-delivery: ## Delivery Service 로그
-	docker-compose logs -f delivery-service
+	docker compose logs -f delivery-service
 
 restart-order: ## Order Service 재시작
-	docker-compose restart order-service
+	docker compose restart order-service
 
 restart-payment: ## Payment Service 재시작
-	docker-compose restart payment-service
+	docker compose restart payment-service
 
 restart-inventory: ## Inventory Service 재시작
-	docker-compose restart inventory-service
+	docker compose restart inventory-service
 
 restart-delivery: ## Delivery Service 재시작
-	docker-compose restart delivery-service
+	docker compose restart delivery-service
 
 clean: ## 정리 (컨테이너, 볼륨, 네트워크)
 	@echo "Cleaning up..."
-	docker-compose down -v --remove-orphans
+	docker compose down -v --remove-orphans
 	docker system prune -f
 
 test: ## 테스트 실행
@@ -103,7 +103,7 @@ check-redis: ## Redis 확인
 	docker exec -it redis redis-cli KEYS "*"
 
 ps: ## 실행 중인 서비스 확인
-	docker-compose ps
+	docker compose ps
 
 health: ## 모든 서비스 헬스 체크
 	@echo "Checking service health..."
