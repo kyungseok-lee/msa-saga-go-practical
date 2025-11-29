@@ -1,0 +1,295 @@
+version: "3.8"
+
+services:
+  # PostgreSQL - Order Service
+  postgres-order:
+    image: postgres:16
+    container_name: postgres-order
+    environment:
+      POSTGRES_USER: order
+      POSTGRES_PASSWORD: order
+      POSTGRES_DB: order_db
+    ports:
+      - "54321:5432"
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+      - ./scripts/init-order-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U order"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Payment Service
+  postgres-payment:
+    image: postgres:16
+    container_name: postgres-payment
+    environment:
+      POSTGRES_USER: payment
+      POSTGRES_PASSWORD: payment
+      POSTGRES_DB: payment_db
+    ports:
+      - "54322:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+      - ./scripts/init-payment-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Inventory Service
+  postgres-inventory:
+    image: postgres:16
+    container_name: postgres-inventory
+    environment:
+      POSTGRES_USER: inventory
+      POSTGRES_PASSWORD: inventory
+      POSTGRES_DB: inventory_db
+    ports:
+      - "54323:5432"
+    volumes:
+      - inventory-db-data:/var/lib/postgresql/data
+      - ./scripts/init-inventory-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inventory"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Delivery Service
+  postgres-delivery:
+    image: postgres:16
+    container_name: postgres-delivery
+    environment:
+      POSTGRES_USER: delivery
+      POSTGRES_PASSWORD: delivery
+      POSTGRES_DB: delivery_db
+    ports:
+      - "54324:5432"
+    volumes:
+      - delivery-db-data:/var/lib/postgresql/data
+      - ./scripts/init-delivery-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U delivery"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Zookeeper
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - zookeeper-data:/bitnami/zookeeper
+
+  # Kafka
+  kafka:
+    image: bitnami/kafka:3.6
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    volumes:
+      - kafka-data:/bitnami/kafka
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kafka UI (Optional)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    depends_on:
+      - kafka
+
+  # Temporal Server (for Orchestration pattern)
+  temporal:
+    image: temporalio/auto-setup:1.24.2
+    container_name: temporal
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgres-temporal
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    depends_on:
+      - postgres-temporal
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "temporal:7233", "cluster", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # PostgreSQL for Temporal
+  postgres-temporal:
+    image: postgres:16
+    container_name: postgres-temporal
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
+    ports:
+      - "54325:5432"
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+
+  # Temporal UI
+  temporal-ui:
+    image: temporalio/ui:2.31.1
+    container_name: temporal-ui
+    ports:
+      - "8088:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      - temporal
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: ./services/order/Dockerfile
+    container_name: order-service
+    ports:
+      - "8001:8001"
+    environment:
+      - DB_DSN=postgres://order:order@postgres-order:5432/order_db?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - SERVICE_PORT=8001
+      - LOG_LEVEL=info
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+  # Payment Service
+  payment-service:
+    build:
+      context: .
+      dockerfile: ./services/payment/Dockerfile
+    container_name: payment-service
+    ports:
+      - "8002:8002"
+    environment:
+      - DB_DSN=postgres://payment:payment@postgres-payment:5432/payment_db?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - SERVICE_PORT=8002
+      - LOG_LEVEL=info
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+  # Inventory Service
+  inventory-service:
+    build:
+      context: .
+      dockerfile: ./services/inventory/Dockerfile
+    container_name: inventory-service
+    ports:
+      - "8003:8003"
+    environment:
+      - DB_DSN=postgres://inventory:inventory@postgres-inventory:5432/inventory_db?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - SERVICE_PORT=8003
+      - LOG_LEVEL=info
+    depends_on:
+      postgres-inventory:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+  # Delivery Service
+  delivery-service:
+    build:
+      context: .
+      dockerfile: ./services/delivery/Dockerfile
+    container_name: delivery-service
+    ports:
+      - "8004:8004"
+    environment:
+      - DB_DSN=postgres://delivery:delivery@postgres-delivery:5432/delivery_db?sslmode=disable
+      - REDIS_ADDR=redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - SERVICE_PORT=8004
+      - LOG_LEVEL=info
+    depends_on:
+      postgres-delivery:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  order-db-data:
+  payment-db-data:
+  inventory-db-data:
+  delivery-db-data:
+  temporal-db-data:
+  redis-data:
+  zookeeper-data:
+  kafka-data:
+
+networks:
+  default:
+    name: saga-network
+
