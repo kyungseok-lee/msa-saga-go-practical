@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -18,7 +19,6 @@ import (
 	"github.com/kyungseok/msa-saga-go-practical/common/idempotency"
 	"github.com/kyungseok/msa-saga-go-practical/common/logger"
 	"github.com/kyungseok/msa-saga-go-practical/common/messaging"
-	"github.com/kyungseok/msa-saga-go-practical/services/order/internal/worker"
 	"github.com/kyungseok/msa-saga-go-practical/services/payment/internal/handler"
 	"github.com/kyungseok/msa-saga-go-practical/services/payment/internal/repository"
 	"github.com/kyungseok/msa-saga-go-practical/services/payment/internal/service"
@@ -105,8 +105,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	outboxWorker := worker.NewOutboxWorker(outboxRepo, publisher, log, 1*time.Second)
-	go outboxWorker.Start(ctx)
+	go startOutboxWorker(ctx, db, publisher, log)
 	log.Info("outbox worker started")
 
 	// HTTP Server 시작 (헬스 체크용)
@@ -144,6 +143,43 @@ func main() {
 
 	cancel() // outbox worker 종료
 	log.Info("server stopped")
+}
+
+func startOutboxWorker(ctx context.Context, db *sql.DB, publisher messaging.Publisher, logger *zap.Logger) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			rows, err := db.QueryContext(ctx, `
+				SELECT id, event_type, payload FROM outbox_events
+				WHERE status = 'PENDING' ORDER BY created_at LIMIT 100
+			`)
+			if err != nil {
+				continue
+			}
+
+			for rows.Next() {
+				var id int64
+				var eventType string
+				var payload []byte
+				if err := rows.Scan(&id, &eventType, &payload); err != nil {
+					continue
+				}
+
+				if err := publisher.Publish(ctx, eventType, "", json.RawMessage(payload)); err != nil {
+					logger.Error("failed to publish", zap.Error(err))
+					continue
+				}
+
+				db.ExecContext(ctx, `UPDATE outbox_events SET status = 'SENT', sent_at = NOW() WHERE id = $1`, id)
+			}
+			rows.Close()
+		}
+	}
 }
 
 // Config 설정 구조체

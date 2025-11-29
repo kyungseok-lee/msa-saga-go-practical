@@ -67,7 +67,7 @@ func (h *EventHandler) handleOrderCreated(ctx context.Context, msg *messaging.Me
 	}
 
 	// 처리 완료 표시
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }
 
@@ -88,6 +88,6 @@ func (h *EventHandler) handleStockReservationFailed(ctx context.Context, msg *me
 	}
 
 	// 처리 완료 표시
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }

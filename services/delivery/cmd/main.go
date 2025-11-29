@@ -80,7 +80,7 @@ func main() {
 			return err
 		}
 
-		_ = idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+		_, _ = idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 		return nil
 	}
 

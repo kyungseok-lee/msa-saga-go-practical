@@ -76,7 +76,7 @@ func (h *EventHandler) handlePaymentCompleted(ctx context.Context, msg *messagin
 	}
 
 	// 처리 완료 표시
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }
 
@@ -95,7 +95,7 @@ func (h *EventHandler) handlePaymentFailed(ctx context.Context, msg *messaging.M
 		return err
 	}
 
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }
 
@@ -114,7 +114,7 @@ func (h *EventHandler) handleStockReserved(ctx context.Context, msg *messaging.M
 		return err
 	}
 
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }
 
@@ -133,7 +133,7 @@ func (h *EventHandler) handleStockReservationFailed(ctx context.Context, msg *me
 		return err
 	}
 
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }
 
@@ -152,7 +152,7 @@ func (h *EventHandler) handleDeliveryStarted(ctx context.Context, msg *messaging
 		return err
 	}
 
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }
 
@@ -171,6 +171,6 @@ func (h *EventHandler) handleDeliveryFailed(ctx context.Context, msg *messaging.
 		return err
 	}
 
-	_ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
+	_, _ = h.idemStore.Reserve(ctx, evt.EventID, 24*time.Hour)
 	return nil
 }
