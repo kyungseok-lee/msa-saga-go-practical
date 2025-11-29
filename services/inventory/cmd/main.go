@@ -15,11 +15,11 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	"github.com/kyungseok/msa-saga-go-practical/common/events"
-	"github.com/kyungseok/msa-saga-go-practical/common/idempotency"
-	"github.com/kyungseok/msa-saga-go-practical/common/logger"
-	"github.com/kyungseok/msa-saga-go-practical/common/messaging"
-	"github.com/kyungseok/msa-saga-go-practical/services/inventory/internal/service"
+	"github.com/kyungseok/msa-saga-go-examples/common/events"
+	"github.com/kyungseok/msa-saga-go-examples/common/idempotency"
+	"github.com/kyungseok/msa-saga-go-examples/common/logger"
+	"github.com/kyungseok/msa-saga-go-examples/common/messaging"
+	"github.com/kyungseok/msa-saga-go-examples/services/inventory/internal/service"
 )
 
 func main() {

@@ -69,7 +69,7 @@
 ## 📂 프로젝트 구조
 
 ```
-msa-saga-go-practical/
+msa-saga-go-examples/
 ├── common/                      # 공통 라이브러리
 │   ├── events/                  # 이벤트 정의
 │   ├── errors/                  # 에러 코드 및 처리
@@ -116,7 +116,7 @@ msa-saga-go-practical/
 
 ```bash
 git clone <repository-url>
-cd msa-saga-go-practical
+cd msa-saga-go-examples
 ```
 
 ### 2. 인프라 시작

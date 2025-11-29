@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyungseok/msa-saga-go-practical/common/errors"
-	"github.com/kyungseok/msa-saga-go-practical/common/events"
+	"github.com/kyungseok/msa-saga-go-examples/common/errors"
+	"github.com/kyungseok/msa-saga-go-examples/common/events"
 	"go.uber.org/zap"
 )
 

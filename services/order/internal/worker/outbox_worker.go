@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/kyungseok/msa-saga-go-practical/common/messaging"
-	"github.com/kyungseok/msa-saga-go-practical/services/order/internal/repository"
+	"github.com/kyungseok/msa-saga-go-examples/common/messaging"
+	"github.com/kyungseok/msa-saga-go-examples/services/order/internal/repository"
 	"go.uber.org/zap"
 )
 

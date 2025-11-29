@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/kyungseok/msa-saga-go-practical/services/order/internal/service"
+	"github.com/kyungseok/msa-saga-go-examples/services/order/internal/service"
 	"go.uber.org/zap"
 )
 

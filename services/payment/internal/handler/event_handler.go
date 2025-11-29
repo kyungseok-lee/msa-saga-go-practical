@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/kyungseok/msa-saga-go-practical/common/events"
-	"github.com/kyungseok/msa-saga-go-practical/common/idempotency"
-	"github.com/kyungseok/msa-saga-go-practical/common/messaging"
-	"github.com/kyungseok/msa-saga-go-practical/services/payment/internal/service"
+	"github.com/kyungseok/msa-saga-go-examples/common/events"
+	"github.com/kyungseok/msa-saga-go-examples/common/idempotency"
+	"github.com/kyungseok/msa-saga-go-examples/common/messaging"
+	"github.com/kyungseok/msa-saga-go-examples/services/payment/internal/service"
 	"go.uber.org/zap"
 )
 
